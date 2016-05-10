@@ -1,6 +1,6 @@
 {
   "name": "addjs",
-  "version": "0.0.18",
+  "version": "0.0.19",
   "author": [
     {
       "name": "xiaojue",
@@ -50,7 +50,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/xiaojue/addJS.git"
+    "url": "https://github.com/yfhe/addjs.git"
   },
   "license": "BSD"
 }

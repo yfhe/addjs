@@ -115,7 +115,7 @@ utils.definePublicPros(combine.prototype, {
   }
 });
 
-combine.build = function(filepath, config, output, beautify, es6, toSass) {
+combine.build = function(filepath, config, output, beautify, es6, toSass, enableMap) {
   var ext = path.extname(filepath),
     target;
   var filestream = new combine({
@@ -143,20 +143,22 @@ combine.build = function(filepath, config, output, beautify, es6, toSass) {
         console.log('minify js by uglify...');
         var uglifyOptions = {
           fromString: true,
-          outSourceMap: path.basename(filepath) + '.map'
         };
+        enableMap && (uglifyOptions.outSourceMap=(path.basename(target) + '.map'))
         if (sourceMap.babel) {
           uglifyOptions.inSourceMap = sourceMap.babel;
         }
         var js = uglify.minify(this.code, uglifyOptions);
         result = js.code;
-        js.map = JSON.parse(js.map);
-        js.map.file  = 'unknown';
-        js.map.sources[0] = 'unknown';
-        if(!js.map.sourcesContent){
-           js.map.sourcesContent = [this.code];
+        if(enableMap){
+          js.map = JSON.parse(js.map);
+          js.map.file  = 'unknown';
+          js.map.sources[0] = 'unknown';
+          if(!js.map.sourcesContent){
+            js.map.sourcesContent = [this.code];
+          }
+          fs.writeFileSync(filepath + '.map', JSON.stringify(js.map));
         }
-        fs.writeFileSync(filepath + '.map', JSON.stringify(js.map));
       } else if (ext === '.css') {
         console.log('min css by cssmin...');
         result = cssmin(this.code);
@@ -178,7 +180,7 @@ function pipeFile(file, params) {
     .on('finish', function() {
       var ext = params.ext;
       if (ext === '.js') {
-        this.file = '\r\ntry{' + this.file + '}catch(e){throw new Error(e+" ' + params.errorFile + '");}\r\n';
+        this.file = '\r\ntry{' + this.file + '}catch(e){console["error" in console ? "error" : "log"](e, "'+params.errorFile+'");}\r\n';
       } else if (ext === '.css') {
         this.file = this.file + '/*' + params.errorFile + '*/ \r\n';
       }
@@ -241,7 +243,7 @@ function combineStream(params) {
               ext: params.ext,
               type: type,
               filepath: type === 'local' ? path.resolve(path.dirname(params.filepath), requireName) : requireName,
-              errorFile: requireName,
+              errorFile: path.basename(requireName),
               cb: cb
             });
           } else {
