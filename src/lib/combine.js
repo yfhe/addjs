@@ -157,7 +157,7 @@ combine.build = function(filepath, config, output, beautify, es6, toSass, enable
           if(!js.map.sourcesContent){
             js.map.sourcesContent = [this.code];
           }
-          fs.writeFileSync(filepath + '.map', JSON.stringify(js.map));
+          fs.writeFileSync(target + '.map', JSON.stringify(js.map));
         }
       } else if (ext === '.css') {
         console.log('min css by cssmin...');
